@@ -26,7 +26,7 @@ public class PDFdownloader {
 
     /**
      * Downloads the HTML from a website specified by the URL
-     * given to the constructor.
+     * given to the constructor of the class.
      */
     public void downloadHTML(){
         try {
@@ -56,7 +56,8 @@ public class PDFdownloader {
         ArrayList<URL> list = new ArrayList<>();
         Pattern pattern = Pattern.compile("<a href=\"(.*?\\.pdf)\"");
 
-        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+        try  {
+            BufferedReader br = new BufferedReader(new FileReader(file));
             String line;
             boolean found = false;
             Matcher matcher;
@@ -76,8 +77,6 @@ public class PDFdownloader {
             if (!found)
                 System.out.format("No match found.%n");
             br.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -96,16 +95,14 @@ public class PDFdownloader {
                 //Regex for extracting the name of the pdf
                 Pattern pattern = Pattern.compile("([^/]*\\.\\w+)$");
                 Matcher matcher;
-                for(URL u : pdfs){
+                for (URL u : pdfs) {
                     InputStream in = u.openStream();
                     matcher = pattern.matcher(u.toString());
-                    if(matcher.find())
+                    if (matcher.find())
                         System.out.println(matcher.group(1));
-                        Files.copy(in, Paths.get(matcher.group(1)), StandardCopyOption.REPLACE_EXISTING);
+                    Files.copy(in, Paths.get("pdfs/" + matcher.group(1)), StandardCopyOption.REPLACE_EXISTING);
                     in.close();
                 }
-            } catch (MalformedURLException e){
-                e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             }
