@@ -70,7 +70,7 @@ public class PDFdownloader {
                             matcher.group(),
                             matcher.start(),
                             matcher.end());
-                    list.add(new URL(matcher.group(1)));
+                    list.add(new URL(url, matcher.group(1)));
                     found = true;
                 }
             }
@@ -87,24 +87,25 @@ public class PDFdownloader {
         if(args.length < 1 || args.length > 1){
             System.out.println("You have to enter one URL, no more, no less.");
         } else {
-            try {
-                URL url = new URL(args[0]);
-                PDFdownloader pdfd = new PDFdownloader(url);
-                pdfd.downloadHTML();
-                List<URL> pdfs = pdfd.extractPDFs();
-                //Regex for extracting the name of the pdf
-                Pattern pattern = Pattern.compile("([^/]*\\.\\w+)$");
-                Matcher matcher;
-                for (URL u : pdfs) {
-                    InputStream in = u.openStream();
+            URL url = new URL(args[0]);
+            PDFdownloader pdfd = new PDFdownloader(url);
+            pdfd.downloadHTML();
+            List<URL> pdfs = pdfd.extractPDFs();
+            //Regex for extracting the name of the pdf
+            Pattern pattern = Pattern.compile("([^/]*\\.\\w+)$");
+            Matcher matcher;
+            for (URL u : pdfs) {
+                InputStream in;
+                try {
+                    in = u.openStream();
                     matcher = pattern.matcher(u.toString());
                     if (matcher.find())
                         System.out.println(matcher.group(1));
                     Files.copy(in, Paths.get("pdfs/" + matcher.group(1)), StandardCopyOption.REPLACE_EXISTING);
                     in.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
             }
         }
     }
