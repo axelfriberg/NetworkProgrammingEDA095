@@ -1,4 +1,4 @@
-package lab2.v1;
+package lab2.p2.v3;
 
 import java.io.IOException;
 import java.io.InputStream;

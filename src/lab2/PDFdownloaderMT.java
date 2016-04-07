@@ -1,6 +1,6 @@
 package lab2;
 
-import lab2.v1.Runner;
+import lab2.p1.v1.Runner;
 
 import java.io.*;
 import java.net.MalformedURLException;
@@ -12,6 +12,8 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -21,6 +23,7 @@ import java.util.regex.Pattern;
 public class PDFdownloaderMT {
     private URL url;
     private final String file = "pdfdownload.html";
+    private final int nbrThreads = 10;
 
     public PDFdownloaderMT(URL url){
         this.url = url;
@@ -85,6 +88,50 @@ public class PDFdownloaderMT {
         return list;
     }
 
+    public void download1(List<URL> urls){
+        for (URL u : urls) {
+            new Thread(new Runner(u)).start();
+        }
+    }
+
+    public void download2(List<URL> urls){
+        new Thread(new lab2.p1.v2.Runner(urls)).start();
+    }
+
+    synchronized public void downloadPDFs(List<URL> urls){
+        Pattern pattern = Pattern.compile("([^/]*\\.\\w+)$");
+        Matcher matcher;
+        for (URL u : urls) {
+            InputStream in;
+            try {
+                in = u.openStream();
+                matcher = pattern.matcher(u.toString());
+                if (matcher.find())
+                    System.out.println("Downloading " + matcher.group(1));
+                Files.copy(in, Paths.get("pdfs/" + matcher.group(1)), StandardCopyOption.REPLACE_EXISTING);
+                in.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void downloadPDF(URL url){
+        Pattern pattern = Pattern.compile("([^/]*\\.\\w+)$");
+        Matcher matcher;
+        InputStream in;
+        try {
+            in = url.openStream();
+            matcher = pattern.matcher(url.toString());
+            if (matcher.find())
+                System.out.println("Downloading " + matcher.group(1));
+            Files.copy(in, Paths.get("pdfs/" + matcher.group(1)), StandardCopyOption.REPLACE_EXISTING);
+            in.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public static void main(String args[]) throws MalformedURLException {
         if(args.length < 1 || args.length > 1){
             System.out.println("You have to enter one URL, no more, no less.");
@@ -92,17 +139,30 @@ public class PDFdownloaderMT {
             URL url = new URL(args[0]);
             PDFdownloaderMT pdfd = new PDFdownloaderMT(url);
             pdfd.downloadHTML();
-            List<URL> pdfs = pdfd.extractPDFs();
-            //Regex for extracting the name of the pdf
-            Pattern pattern = Pattern.compile("([^/]*\\.\\w+)$");
-            Matcher matcher;
-            //Version one of runner
-            for (URL u : pdfs) {
-                new Thread(new Runner(u)).start();
+            List<URL> urls = pdfd.extractPDFs();
+
+            //p1v1  of runner
+            //pdfd.download1(urls);
+
+            //p1v2 of runner
+            //pdfd.download2(urls);
+
+            //p2v1 of runner
+            for (int i = 0; i < pdfd.nbrThreads; i++) {
+                new lab2.p2.v1.Runner(urls,pdfd).start();
             }
 
-            //Version two of runner
-            //new Thread(new lab2.v2.Runner(pdfs)).start();
+            //p2v2 of runner
+            /*for (int i = 0; i < pdfd.nbrThreads; i++) {
+                new Thread(new lab2.p2.v2.Runner(urls,pdfd)).start();
+            }*/
+
+            //p2v3 of runner
+            /*ExecutorService pool = Executors.newFixedThreadPool(urls.size());
+            for(URL u : urls){
+                pool.submit(new Thread(new lab2.p2.v3.Runner(u)));
+            }
+            pool.shutdown(); */
         }
     }
 }
