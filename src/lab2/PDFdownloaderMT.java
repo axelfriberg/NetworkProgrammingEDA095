@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.Collections;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -148,21 +149,23 @@ public class PDFdownloaderMT {
             //pdfd.download2(urls);
 
             //p2v1 of runner
+            /* List synclist = Collections.synchronizedList(urls);
             for (int i = 0; i < pdfd.nbrThreads; i++) {
-                new lab2.p2.v1.Runner(urls,pdfd).start();
-            }
-
-            //p2v2 of runner
-            /*for (int i = 0; i < pdfd.nbrThreads; i++) {
-                new Thread(new lab2.p2.v2.Runner(urls,pdfd)).start();
+                new lab2.p2.v1.Runner(synclist).start();
             }*/
 
+            //p2v2 of runner, synchronized in the Runnable instead
+            for (int i = 0; i < pdfd.nbrThreads; i++) {
+                new Thread(new lab2.p2.v2.Runner(urls)).start();
+            }
+
             //p2v3 of runner
-            /*ExecutorService pool = Executors.newFixedThreadPool(urls.size());
+            /*
+            ExecutorService pool = Executors.newFixedThreadPool(urls.size());
             for(URL u : urls){
                 pool.submit(new Thread(new lab2.p2.v3.Runner(u)));
             }
-            pool.shutdown(); */
+            pool.shutdown();*/
         }
     }
 }

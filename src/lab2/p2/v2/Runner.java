@@ -1,24 +1,45 @@
 package lab2.p2.v2;
 
-import lab2.PDFdownloaderMT;
-
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Downloads multiple pdfs.
  */
 public class Runner implements Runnable {
-    private PDFdownloaderMT pdfd;
-    private List<URL> urls;
+    private final List<URL> urls;
 
-    public Runner(List<URL> urls, PDFdownloaderMT pdfd){
+    public Runner(List<URL> urls){
         this.urls = urls;
-        this.pdfd = pdfd;
     }
 
     @Override
     public void run() {
-        pdfd.downloadPDFs(urls);
+        Pattern pattern = Pattern.compile("([^/]*\\.\\w+)$");
+        Matcher matcher;
+        while(!urls.isEmpty()) {
+            URL u;
+            synchronized(urls){
+                u = urls.remove(0);
+            }
+            InputStream in;
+            try {
+                in = u.openStream();
+                matcher = pattern.matcher(u.toString());
+                if (matcher.find())
+                    System.out.println("Downloading " + matcher.group(1));
+                Files.copy(in, Paths.get("pdfs/" + matcher.group(1)), StandardCopyOption.REPLACE_EXISTING);
+                in.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }
