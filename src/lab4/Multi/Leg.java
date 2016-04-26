@@ -33,7 +33,6 @@ public class Leg {
             htmlDoc = connection.get();
         } catch (IOException e) {
             System.out.println("Connection failed " + e);
-
         }
         Elements base = htmlDoc.getElementsByTag("base");
         System.out.println("Base : " + base);
