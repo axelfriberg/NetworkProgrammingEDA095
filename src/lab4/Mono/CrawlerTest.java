@@ -1,4 +1,4 @@
-package lab4;
+package lab4.Mono;
 
 public class CrawlerTest {
     public static void main(String[] args) {
